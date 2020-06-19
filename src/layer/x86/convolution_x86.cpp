@@ -36,7 +36,7 @@ namespace ncnn {
 #if __AVX__
 #include "convolution_3x3_pack1to8.h"
 #include "convolution_3x3_pack8to1.h"
-// #include "convolution_3x3_pack8.h"
+#include "convolution_3x3_pack8.h"
 #include "convolution_1x1_pack8.h"
 #endif
 
