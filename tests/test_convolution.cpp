@@ -209,6 +209,6 @@ static int test_convolution_1()
 int main()
 {
     SRAND(7767517);
-
+    return test_convolution(8, 8, 8, 8, 3, 1, 1, 0, 1) || test_convolution(8, 10, 8, 8, 3, 1, 1, 0, 1);
     return test_convolution_0() || test_convolution_1();
 }

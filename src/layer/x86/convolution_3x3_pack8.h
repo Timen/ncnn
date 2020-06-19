@@ -20,33 +20,22 @@ static inline __m256 vsubq_f32(__m256 a, __m256 b){
     return _mm256_sub_ps(a,b);
 }
 static inline __m256 vmulq_f32(__m256 a, __m256 b){
-    return _mm256_sub_ps(a,b);
+    return _mm256_mul_ps(a,b);
 }
 static inline __m256 vmulq_n_f32(__m256 a, float b){
-    return _mm256_sub_ps(a,_mm256_set1_ps(b));
+    return _mm256_mul_ps(a,_mm256_set1_ps(b));
 }
-static inline __m256 vmlaq_n_f32(__m256 sum, __m256 b, __m256 c){
-    return _mm256_fmadd_ps(b,c,sum);
-}
-static inline __m256 vmlaq_n_f32(__m256 sum, __m256 b, float c){
-    return _mm256_fmadd_ps(b,_mm256_set1_ps(c),sum);
-}
-static inline __m256 vmlaq_n_f32(__m256 sum, float b, __m256  c){
-    return _mm256_fmadd_ps(_mm256_set1_ps(b),c,sum);
+static inline __m256 vmlaq_n_f32(__m256 a, __m256 b, float c){
+    return _mm256_add_ps(a,_mm256_mul_ps(b,_mm256_set1_ps(c)));
 }
 
-static inline __m256 vmlsq_n_f32(__m256 sum, __m256 b, __m256 c){
-    return _mm256_fmsub_ps(b,c,sum);
-}
-static inline __m256 vmlsq_n_f32(__m256 sum, __m256 b, float c){
-    return _mm256_fmsub_ps(b,_mm256_set1_ps(c),sum);
-}
-static inline __m256 vmlsq_n_f32(__m256 sum, float b, __m256  c){
-    return _mm256_fmsub_ps(_mm256_set1_ps(b),c,sum);
+static inline __m256 vmlsq_n_f32(__m256 a, __m256 b, float c){
+    return _mm256_sub_ps(a,_mm256_mul_ps(b,_mm256_set1_ps(c)));
 }
 
 
-static void conv3x3s1_winograd64_transform_kernel_pack4_neon(const Mat& kernel, Mat& kernel_tm_pack4, int inch, int outch)
+
+static void conv3x3s1_winograd64_transform_kernel_pack8_avx(const Mat& kernel, Mat& kernel_tm_pack8, int inch, int outch)
 {
     // winograd63 transform kernel
     Mat kernel_tm;
@@ -97,12 +86,10 @@ static void conv3x3s1_winograd64_transform_kernel_pack4_neon(const Mat& kernel, 
             }
         }
     }
-
     // interleave
     // src = 64-inch-outch
     // dst = 4b-4a-inch/4a-64-outch/4b;
-    kernel_tm_pack4.create(2 * inch / 8, 64, (outch / 8) / 2 + (outch / 8) % 2, (size_t)4u * 64, 64);
-
+    kernel_tm_pack8.create(2 * inch / 8, 64, (outch / 4) / 2 + (outch / 4) % 2, (size_t)4u * 64, 64);
     int q = 0;
     for (; q + 7 < outch; q += 8)
     {
@@ -115,13 +102,13 @@ static void conv3x3s1_winograd64_transform_kernel_pack4_neon(const Mat& kernel, 
         const Mat k6 = kernel_tm.channel(q + 6);
         const Mat k7 = kernel_tm.channel(q + 7);
 
-        Mat g0 = kernel_tm_pack4.channel(q / 8);
+        Mat g0 = kernel_tm_pack8.channel(q / 8);
 
         for (int k = 0; k < 64; k++)
         {
             float* g00 = g0.row(k);
 
-            for (int p = 0; p + 7 < inch; p += 8)
+            for (int p = 0; p + 3 < inch; p += 4)
             {
                 const float* k00 = k0.row(p);
                 const float* k01 = k0.row(p + 1);
@@ -195,12 +182,11 @@ static void conv3x3s1_winograd64_transform_kernel_pack4_neon(const Mat& kernel, 
                 const float* k76 = k7.row(p + 6);
                 const float* k77 = k7.row(p + 7);
 
-                
-
                 g00[0] = k00[k];
                 g00[1] = k10[k];
                 g00[2] = k20[k];
                 g00[3] = k30[k];
+
                 g00[4] = k40[k];
                 g00[5] = k50[k];
                 g00[6] = k60[k];
@@ -210,6 +196,7 @@ static void conv3x3s1_winograd64_transform_kernel_pack4_neon(const Mat& kernel, 
                 g00[9] = k11[k];
                 g00[10] = k21[k];
                 g00[11] = k31[k];
+
                 g00[12] = k41[k];
                 g00[13] = k51[k];
                 g00[14] = k61[k];
@@ -219,6 +206,7 @@ static void conv3x3s1_winograd64_transform_kernel_pack4_neon(const Mat& kernel, 
                 g00[17] = k12[k];
                 g00[18] = k22[k];
                 g00[19] = k32[k];
+
                 g00[20] = k42[k];
                 g00[21] = k52[k];
                 g00[22] = k62[k];
@@ -228,55 +216,22 @@ static void conv3x3s1_winograd64_transform_kernel_pack4_neon(const Mat& kernel, 
                 g00[25] = k13[k];
                 g00[26] = k23[k];
                 g00[27] = k33[k];
+
                 g00[28] = k43[k];
                 g00[29] = k53[k];
                 g00[30] = k63[k];
                 g00[31] = k73[k];
 
-                g00[32] = k04[k];
-                g00[33] = k14[k];
-                g00[34] = k24[k];
-                g00[35] = k34[k];
-                g00[36] = k44[k];
-                g00[37] = k54[k];
-                g00[38] = k64[k];
-                g00[39] = k74[k];
-
-                g00[40] = k05[k];
-                g00[41] = k15[k];
-                g00[42] = k25[k];
-                g00[43] = k35[k];
-                g00[44] = k45[k];
-                g00[45] = k55[k];
-                g00[46] = k65[k];
-                g00[47] = k75[k];
-
-                g00[48] = k06[k];
-                g00[49] = k16[k];
-                g00[50] = k26[k];
-                g00[51] = k36[k];
-                g00[52] = k46[k];
-                g00[53] = k56[k];
-                g00[54] = k66[k];
-                g00[55] = k76[k];
-
-                g00[56] = k07[k];
-                g00[57] = k17[k];
-                g00[58] = k27[k];
-                g00[59] = k37[k];
-                g00[60] = k47[k];
-                g00[61] = k57[k];
-                g00[62] = k67[k];
-                g00[63] = k77[k];
-
-                g00 += 64;
+                g00 += 32;
             }
         }
     }
+    fprintf(stderr, "TEST3\n");
+
 }
 
 
-static void conv3x3s1_winograd64_pack4_neon(const Mat& bottom_blob, Mat& top_blob, const Mat& kernel_tm, const Mat& _bias, const Option& opt)
+static void conv3x3s1_winograd64_pack8_avx(const Mat& bottom_blob, Mat& top_blob, const Mat& kernel_tm, const Mat& _bias, const Option& opt)
 {
     int w = bottom_blob.w;
     int h = bottom_blob.h;
@@ -299,7 +254,6 @@ static void conv3x3s1_winograd64_pack4_neon(const Mat& bottom_blob, Mat& top_blo
     copy_make_border(bottom_blob, bottom_blob_bordered, 0, h - bottom_blob.h, 0, w - bottom_blob.w, BORDER_CONSTANT, 0.f, opt);
 
     const float* bias = _bias;
-    fprintf(stderr, "Minimum winograd\n");
     // BEGIN transform input
     Mat bottom_blob_tm;
     {
@@ -307,8 +261,6 @@ static void conv3x3s1_winograd64_pack4_neon(const Mat& bottom_blob, Mat& top_blo
         int h_tm = outh / 6 * 8;
 
         const int tiles = w_tm / 8 * h_tm / 8;
-            fprintf(stderr, "1 tiles = %d \n",tiles);
-
 
         bottom_blob_tm.create(tiles, 64, inch, elemsize, elempack, opt.workspace_allocator);
 
@@ -506,6 +458,10 @@ static void conv3x3s1_winograd64_pack4_neon(const Mat& bottom_blob, Mat& top_blo
     }
     bottom_blob_bordered = Mat();
     // END transform input
+        fprintf(stderr, "bottom_blob_tm = %d x %d x %d elempack = %d \n",bottom_blob_tm.w,bottom_blob_tm.h,bottom_blob_tm.c,bottom_blob_tm.elempack);
+
+        fprintf(stderr, "bottom_blob_tm = %f %f %f %f %f %f %f %f\n", bottom_blob_tm[0],bottom_blob_tm[1],bottom_blob_tm[2],bottom_blob_tm[3],bottom_blob_tm[4],bottom_blob_tm[5],bottom_blob_tm[6],bottom_blob_tm[7]);
+        fprintf(stderr, "bottom_blob_tm = %f %f %f %f %f %f %f %f\n", bottom_blob_tm[8],bottom_blob_tm[9],bottom_blob_tm[10],bottom_blob_tm[11],bottom_blob_tm[12],bottom_blob_tm[13],bottom_blob_tm[14],bottom_blob_tm[15]);
 
     // BEGIN dot
     Mat top_blob_tm;
@@ -514,13 +470,33 @@ static void conv3x3s1_winograd64_pack4_neon(const Mat& bottom_blob, Mat& top_blo
         int h_tm = outh / 6 * 8;
 
         const int tiles = h_tm / 8 * w_tm / 8;
-            fprintf(stderr, "2 tiles = %d \n",tiles);
+        fprintf(stderr, "2 tiles = %d \n",tiles);
 
         // permute
         //         bottom_blob_tm.create(tiles, 64, inch, elemsize, elempack, opt.workspace_allocator);
         Mat bottom_blob_tm2;
 
-        bottom_blob_tm2.create(1 * inch, tiles, 64, elemsize, elempack, opt.workspace_allocator);
+        #if __aarch64__
+        if (tiles >= 12)
+            bottom_blob_tm2.create(12 * inch, tiles / 12 + (tiles % 12) / 8 + (tiles % 12 % 8) / 4 + (tiles % 12 % 4) / 2 + tiles % 12 % 2, 64, elemsize, elempack, opt.workspace_allocator);
+        else if (tiles >= 8)
+            bottom_blob_tm2.create(8 * inch, tiles / 8 + (tiles % 8) / 4 + (tiles % 4) / 2 + tiles % 2, 64, elemsize, elempack, opt.workspace_allocator);
+        else if (tiles >= 4)
+            bottom_blob_tm2.create(4 * inch, tiles / 4 + (tiles % 4) / 2 + tiles % 2, 64, elemsize, elempack, opt.workspace_allocator);
+        else if (tiles >= 2)
+            bottom_blob_tm2.create(2 * inch, tiles / 2 + tiles % 2, 64, elemsize, elempack, opt.workspace_allocator);
+        else // if (tiles >= 1)
+            bottom_blob_tm2.create(1 * inch, tiles, 64, elemsize, elempack, opt.workspace_allocator);
+#else
+        if (tiles >= 8)
+            bottom_blob_tm2.create(8 * inch, tiles / 8 + (tiles % 8) / 4 + (tiles % 4) / 2 + tiles % 2, 64, elemsize, elempack, opt.workspace_allocator);
+        else if (tiles >= 4)
+            bottom_blob_tm2.create(4 * inch, tiles / 4 + (tiles % 4) / 2 + tiles % 2, 64, elemsize, elempack, opt.workspace_allocator);
+        else if (tiles >= 2)
+            bottom_blob_tm2.create(2 * inch, tiles / 2 + tiles % 2, 64, elemsize, elempack, opt.workspace_allocator);
+        else // if (tiles >= 1)
+            bottom_blob_tm2.create(1 * inch, tiles, 64, elemsize, elempack, opt.workspace_allocator);
+#endif
 
         #pragma omp parallel for num_threads(opt.num_threads)
         for (int r = 0; r < 64; r++)
@@ -529,6 +505,114 @@ static void conv3x3s1_winograd64_pack4_neon(const Mat& bottom_blob, Mat& top_blo
 
             // tile
             int i = 0;
+            for (; i + 11 < tiles; i += 12)
+            {
+                float* tm2p = tm2.row(i / 12);
+
+                const float* r0 = bottom_blob_tm;
+
+                r0 += (r * tiles + i) * 8;
+
+                for (int q = 0; q < inch; q++)
+                {
+                    __m256 _r0 = _mm256_loadu_ps(r0);
+                    __m256 _r1 = _mm256_loadu_ps(r0+8);
+                    __m256 _r2 = _mm256_loadu_ps(r0+16);
+                    __m256 _r3 = _mm256_loadu_ps(r0+24);
+                    __m256 _r4 = _mm256_loadu_ps(r0+32);
+                    __m256 _r5 = _mm256_loadu_ps(r0+40);
+                    __m256 _r6 = _mm256_loadu_ps(r0+48);
+                    __m256 _r7 = _mm256_loadu_ps(r0+56);
+                    __m256 _r8 = _mm256_loadu_ps(r0+64);
+                    __m256 _r9 = _mm256_loadu_ps(r0+72);
+                    __m256 _r10 = _mm256_loadu_ps(r0+80);
+                    __m256 _r11 = _mm256_loadu_ps(r0+88);
+                    _mm256_storeu_ps(tm2p,_r0);
+                    _mm256_storeu_ps(tm2p+8,_r1);
+                    _mm256_storeu_ps(tm2p+16,_r2);
+                    _mm256_storeu_ps(tm2p+24,_r3);
+                    _mm256_storeu_ps(tm2p+32,_r4);
+                    _mm256_storeu_ps(tm2p+40,_r5);
+                    _mm256_storeu_ps(tm2p+48,_r6);
+                    _mm256_storeu_ps(tm2p+56,_r7);
+                    _mm256_storeu_ps(tm2p+64,_r8);
+                    _mm256_storeu_ps(tm2p+72,_r9);
+                    _mm256_storeu_ps(tm2p+80,_r10);
+                    _mm256_storeu_ps(tm2p+88,_r11);
+                    tm2p += 96;
+                    r0 += bottom_blob_tm.cstep * 8;
+                }
+            }
+            for (; i + 7 < tiles; i += 8)
+            {
+                float* tm2p = tm2.row(i / 12 + (i % 12) / 8);
+
+                const float* r0 = bottom_blob_tm;
+
+                r0 += (r * tiles + i) * 8;
+
+                for (int q = 0; q < inch; q++)
+                {
+                    __m256 _r0 = _mm256_loadu_ps(r0);
+                    __m256 _r1 = _mm256_loadu_ps(r0+8);
+                    __m256 _r2 = _mm256_loadu_ps(r0+16);
+                    __m256 _r3 = _mm256_loadu_ps(r0+24);
+                    __m256 _r4 = _mm256_loadu_ps(r0+32);
+                    __m256 _r5 = _mm256_loadu_ps(r0+40);
+                    __m256 _r6 = _mm256_loadu_ps(r0+48);
+                    __m256 _r7 = _mm256_loadu_ps(r0+56);
+                    _mm256_storeu_ps(tm2p,_r0);
+                    _mm256_storeu_ps(tm2p+8,_r1);
+                    _mm256_storeu_ps(tm2p+16,_r2);
+                    _mm256_storeu_ps(tm2p+24,_r3);
+                    _mm256_storeu_ps(tm2p+32,_r4);
+                    _mm256_storeu_ps(tm2p+40,_r5);
+                    _mm256_storeu_ps(tm2p+48,_r6);
+                    _mm256_storeu_ps(tm2p+56,_r7);
+                    tm2p += 64;
+                    r0 += bottom_blob_tm.cstep * 8;
+                }
+            }
+            for (; i + 3 < tiles; i += 4)
+            {
+                float* tm2p = tm2.row(i / 12 + (i % 12) / 8 + (i % 12 % 8) / 4);
+
+                const float* r0 = bottom_blob_tm;
+
+                r0 += (r * tiles + i) * 8;
+
+                for (int q = 0; q < inch; q++)
+                {
+                    __m256 _r0 = _mm256_loadu_ps(r0);
+                    __m256 _r1 = _mm256_loadu_ps(r0+8);
+                    __m256 _r2 = _mm256_loadu_ps(r0+16);
+                    __m256 _r3 = _mm256_loadu_ps(r0+24);
+                    _mm256_storeu_ps(tm2p,_r0);
+                    _mm256_storeu_ps(tm2p+8,_r1);
+                    _mm256_storeu_ps(tm2p+16,_r2);
+                    _mm256_storeu_ps(tm2p+24,_r3);
+                    tm2p += 32;
+                    r0 += bottom_blob_tm.cstep * 8;
+                }
+            }
+            for (; i + 1 < tiles; i += 2)
+            {
+                float* tm2p = tm2.row(i / 12 + (i % 12) / 8 + (i % 12 % 8) / 4 + (i % 12 % 4) / 2);
+
+                const float* r0 = bottom_blob_tm;
+
+                r0 += (r * tiles + i) * 8;
+
+                for (int q = 0; q < inch; q++)
+                {
+                    __m256 _r0 = _mm256_loadu_ps(r0);
+                    __m256 _r1 = _mm256_loadu_ps(r0+8);
+                    _mm256_storeu_ps(tm2p,_r0);
+                    _mm256_storeu_ps(tm2p+8,_r1);
+                    tm2p += 16;
+                    r0 += bottom_blob_tm.cstep * 8;
+                }
+            }
 
             for (; i < tiles; i++)
             {
@@ -536,7 +620,7 @@ static void conv3x3s1_winograd64_pack4_neon(const Mat& bottom_blob, Mat& top_blo
 
                 const float* r0 = bottom_blob_tm;
 
-                r0 += (r * tiles + i) * 4;
+                r0 += (r * tiles + i) * 8;
 
                 for (int q = 0; q < inch; q++)
                 {
@@ -550,81 +634,53 @@ static void conv3x3s1_winograd64_pack4_neon(const Mat& bottom_blob, Mat& top_blo
 
         bottom_blob_tm = Mat();
         // permute end
+        fprintf(stderr, "bottom_blob_tm2 = %f %f %f %f %f %f %f %f\n", bottom_blob_tm2[0],bottom_blob_tm2[1],bottom_blob_tm2[2],bottom_blob_tm2[3],bottom_blob_tm2[4],bottom_blob_tm2[5],bottom_blob_tm2[6],bottom_blob_tm2[7]);
+        fprintf(stderr, "bottom_blob_tm2 = %f %f %f %f %f %f %f %f\n", bottom_blob_tm2[8],bottom_blob_tm2[9],bottom_blob_tm2[10],bottom_blob_tm2[11],bottom_blob_tm2[12],bottom_blob_tm2[13],bottom_blob_tm2[14],bottom_blob_tm2[15]);
 
         top_blob_tm.create(tiles, 64, outch, elemsize, elempack, opt.workspace_allocator);
 
         int nn_outch = 0;
         int remain_outch_start = 0;
 
-        nn_outch = outch >> 1;
-        remain_outch_start = nn_outch << 1;
+        //   "eor    v16.16b, v16.16b, v16.16b   \n"
 
-        #pragma omp parallel for num_threads(opt.num_threads)
-        for (int pp = 0; pp < nn_outch; pp++)
-        {
-            int p = pp * 2;
+        // "0:                                 \n"
 
-            float* output0_tm = top_blob_tm.channel(p);
-            float* output1_tm = top_blob_tm.channel(p + 1);
+        // "prfm   pldl1keep, [%2, #128]       \n"
+        // "ld1    {v0.4s}, [%2], #16          \n" // r0
 
-            const Mat kernel01_tm = kernel_tm.channel(pp);
+        // "prfm   pldl1keep, [%3, #512]       \n"
+        // "ld1    {v8.4s, v9.4s, v10.4s, v11.4s}, [%3], #64 \n" // w0123
 
-            for (int r = 0; r < 64; r++)
-            {
-                const Mat bb2 = bottom_blob_tm2.channel(r);
+        // "fmla   v16.4s, v8.4s, v0.s[0]      \n"
+        // "fmla   v16.4s, v9.4s, v0.s[1]      \n"
 
-                int i = 0;
-                for (; i < tiles; i++)
-                {
-                    const float* r0 = bb2.row(i / 12 + (i % 12) / 8 + (i % 12 % 8) / 4 + (i % 12 % 4) / 2 + i % 12 % 2);
+        // "subs   %w0, %w0, #1                \n"
 
-                    const float* k01 = kernel01_tm.row(r);
+        // "fmla   v16.4s, v10.4s, v0.s[2]     \n"
+        // "fmla   v16.4s, v11.4s, v0.s[3]     \n"
 
-                    int nn = inch; // inch always > 0
-                    __m256 sum0 = _mm256_setzero_ps();
-                    __m256 sum1 = _mm256_setzero_ps();
-                    for (;nn>0;nn--){
-                        __m256 _r00 = _mm256_broadcast_ss(r0);
-                        __m256 _r01 = _mm256_broadcast_ss(r0+1);
-                        __m256 _r02 = _mm256_broadcast_ss(r0+2);
-                        __m256 _r03 = _mm256_broadcast_ss(r0+3);
+        // "bne    0b                          \n"
 
-                        r0 += 4;
+        // "st1    {v16.4s}, [%1], #16         \n"
 
-                        __m256 _k00 = _mm256_loadu_ps(k01);
-                        __m256 _k01 = _mm256_loadu_ps(k01+8);
-                        __m256 _k02 = _mm256_loadu_ps(k01+16);
-                        __m256 _k03 = _mm256_loadu_ps(k01+24);
-                        __m256 _k04 = _mm256_loadu_ps(k01+32);
-                        __m256 _k05 = _mm256_loadu_ps(k01+40);
-                        __m256 _k06 = _mm256_loadu_ps(k01+48);
-                        __m256 _k07 = _mm256_loadu_ps(k01+56);
-                        k01 += 64;
+        // : "=r"(nn),         // %0
+        // "=r"(output0_tm), // %1
+        // "=r"(r0),         // %2
+        // "=r"(k0)          // %3
+        // : "0"(nn),
+        // "1"(output0_tm),
+        // "2"(r0),
+        // "3"(k0)
+        // : "cc", "memory", "v0", "v8", "v9", "v10", "v11", "v16");
 
-                        sum0 = _mm256_fmadd_ps(_k00,_r00,sum0);
-                        sum1 = _mm256_fmadd_ps(_k01,_r00,sum1);
-                        sum0 = _mm256_fmadd_ps(_k02,_r01,sum0);
-                        sum1 = _mm256_fmadd_ps(_k03,_r01,sum1);
-                        sum0 = _mm256_fmadd_ps(_k04,_r02,sum0);
-                        sum1 = _mm256_fmadd_ps(_k05,_r02,sum1);
-                        sum0 = _mm256_fmadd_ps(_k06,_r03,sum0);
-                        sum1 = _mm256_fmadd_ps(_k07,_r03,sum1);
-
-                    }
-                    _mm256_storeu_ps(output0_tm,sum0);
-                    _mm256_storeu_ps(output1_tm,sum1);
-                    output0_tm += 8;
-                    output1_tm += 8;
-                    
-                   
-                }
-            }
-        }
         fprintf(stderr,"remain = %d , outch = %d \n",remain_outch_start,outch);
         #pragma omp parallel for num_threads(opt.num_threads)
         for (int p = remain_outch_start; p < outch; p++)
         {
             float* output0_tm = top_blob_tm.channel(p);
+            fprintf(stderr, "sum start = %f %f %f %f %f %f %f %f\n", output0_tm[0],output0_tm[1], output0_tm[2],output0_tm[3], output0_tm[4],output0_tm[5], output0_tm[6],output0_tm[7]);
+
 
             const Mat kernel0_tm = kernel_tm.channel(p / 2 + p % 2);
 
@@ -633,42 +689,140 @@ static void conv3x3s1_winograd64_pack4_neon(const Mat& bottom_blob, Mat& top_blo
                 const Mat bb2 = bottom_blob_tm2.channel(r);
 
                 int i = 0;
+                for (; i+1 < tiles; i+=2)
+                {
+                    const float* r0 = bb2.row(i / 12 + (i % 12) / 8 + (i % 12 % 8) / 4 + (i % 12 % 4) / 2);
+
+                    const float* k01 = kernel0_tm.row(r);
+
+                    int nn = inch; // inch always > 0
+                    __m256 _sum0 = _mm256_set1_ps(0.f);
+                    __m256 _sum1 = _mm256_set1_ps(0.f);
+
+                    for (;nn>0;nn--){
+
+                        __m256 _k01 = _mm256_loadu_ps(k01);
+                        __m256 _r00 = _mm256_broadcast_ss(r0);
+                        __m256 _r01 = _mm256_broadcast_ss(r0+8);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r00,_sum0);
+                        _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
+
+                        _k01 = _mm256_loadu_ps(k01);
+                        _r00 = _mm256_broadcast_ss(r0+1);
+                        _r01 = _mm256_broadcast_ss(r0+9);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r00,_sum0);
+                        _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
+
+                        _k01 = _mm256_loadu_ps(k01);
+                        _r00 = _mm256_broadcast_ss(r0+2);
+                        _r01 = _mm256_broadcast_ss(r0+10);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r00,_sum0);
+                        _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
+
+                        _k01 = _mm256_loadu_ps(k01);
+                        _r00 = _mm256_broadcast_ss(r0+3);
+                        _r01 = _mm256_broadcast_ss(r0+11);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r00,_sum0);
+                        _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
+
+                        _k01 = _mm256_loadu_ps(k01);
+                        _r00 = _mm256_broadcast_ss(r0+4);
+                        _r01 = _mm256_broadcast_ss(r0+12);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r00,_sum0);
+                        _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
+
+                        _k01 = _mm256_loadu_ps(k01);
+                        _r00 = _mm256_broadcast_ss(r0+5);
+                        _r01 = _mm256_broadcast_ss(r0+13);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r00,_sum0);
+                        _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
+
+                        _k01 = _mm256_loadu_ps(k01);
+                        _r00 = _mm256_broadcast_ss(r0+6);
+                        _r01 = _mm256_broadcast_ss(r0+14);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r00,_sum0);
+                        _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
+
+                        _k01 = _mm256_loadu_ps(k01);
+                        _r00 = _mm256_broadcast_ss(r0+7);
+                        _r01 = _mm256_broadcast_ss(r0+15);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r00,_sum0);
+                        _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
+
+                        
+                        k01 += 64;
+                        r0 += 16;
+
+                    }
+                    _mm256_storeu_ps(output0_tm, _sum0);
+                    _mm256_storeu_ps(output0_tm+8, _sum1);
+                    if (r < 5){
+                        fprintf(stderr, "2 sum %d r0 = %f = %f %f %f %f %f %f %f %f\n",r,r0[-16], output0_tm[0],output0_tm[1], output0_tm[2],output0_tm[3],  output0_tm[4],output0_tm[5], output0_tm[6],output0_tm[7]);
+                    }
+                    output0_tm += 16;
+                   
+                }
+
                 for (; i < tiles; i++)
                 {
                     const float* r0 = bb2.row(i / 12 + (i % 12) / 8 + (i % 12 % 8) / 4 + (i % 12 % 4) / 2 + i % 12 % 2);
 
-                    const float* k0 = kernel0_tm.row(r);
+                    const float* k01 = kernel0_tm.row(r);
 
                     int nn = inch; // inch always > 0
-                    __m256 sum0 = _mm256_setzero_ps();
+                    __m256 _sum0 = _mm256_set1_ps(0.f);
+
                     for (;nn>0;nn--){
-                        __m256 _r00 = _mm256_broadcast_ss(r0);
-                        __m256 _r01 = _mm256_broadcast_ss(r0+1);
-                        __m256 _r02 = _mm256_broadcast_ss(r0+2);
-                        __m256 _r03 = _mm256_broadcast_ss(r0+3);
 
-                        r0 += 4;
+                        __m256 _k01 = _mm256_loadu_ps(k01);
+                        __m256 _r0 = _mm256_set1_ps(r0[0]);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
 
-                        __m256 _k00 = _mm256_loadu_ps(k0);
-                        __m256 _k01 = _mm256_loadu_ps(k0+8);
-                        __m256 _k02 = _mm256_loadu_ps(k0+16);
-                        __m256 _k03 = _mm256_loadu_ps(k0+24);
-                        k0 += 32;
+                        _k01 = _mm256_loadu_ps(k01+8);
+                        _r0 = _mm256_set1_ps(r0[1]);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0 );
 
-                        sum0 = _mm256_fmadd_ps(_k00,_r00,sum0);
-                        sum0 = _mm256_fmadd_ps(_k01,_r01,sum0);
-                        sum0 = _mm256_fmadd_ps(_k02,_r02,sum0);
-                        sum0 = _mm256_fmadd_ps(_k03,_r03,sum0);
+                        _k01 = _mm256_loadu_ps(k01+16);
+                        _r0 = _mm256_set1_ps(r0[2]);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0 );
+
+                        _k01 = _mm256_loadu_ps(k01+24);
+                        _r0 = _mm256_set1_ps(r0[3]);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
+                        _k01 = _mm256_loadu_ps(k01+32);
+                        _r0 = _mm256_set1_ps(r0[4]);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
+                        _k01 = _mm256_loadu_ps(k01+40);
+                        _r0 = _mm256_set1_ps(r0[5]);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
+
+                        _k01 = _mm256_loadu_ps(k01+48);
+                        _r0 = _mm256_set1_ps(r0[6]);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
+
+                        _k01 = _mm256_loadu_ps(k01+56);
+                        _r0 = _mm256_set1_ps(r0[7]);
+                        _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
+
+
+                        k01 += 64;
+                        r0 += 8;
 
                     }
-                    _mm256_storeu_ps(output0_tm,sum0);
+                    _mm256_storeu_ps(output0_tm, _sum0);
+                    
                     output0_tm += 8;
-                    }
+                   
+                }
+
             }
         }
     }
     bottom_blob_tm = Mat();
     // END dot
+    fprintf(stderr, "top_blob_tm 0 = %f %f %f %f %f %f %f %f\n", top_blob_tm[0],top_blob_tm[1],top_blob_tm[2],top_blob_tm[3],top_blob_tm[4],top_blob_tm[5],top_blob_tm[6],top_blob_tm[7]);
+    fprintf(stderr, "top_blob_tm 1 = %f %f %f %f %f %f %f %f\n", top_blob_tm.row(1)[0],top_blob_tm.row(1)[1],top_blob_tm.row(1)[2],top_blob_tm.row(1)[3],top_blob_tm.row(1)[4],top_blob_tm.row(1)[5],top_blob_tm.row(1)[6],top_blob_tm.row(1)[7]);
+    fprintf(stderr, "top_blob_tm 5 = %f %f %f %f %f %f %f %f\n", top_blob_tm.row(5)[0],top_blob_tm.row(5)[1],top_blob_tm.row(5)[2],top_blob_tm.row(5)[3],top_blob_tm.row(5)[4],top_blob_tm.row(5)[5],top_blob_tm.row(5)[6],top_blob_tm.row(5)[7]);
 
     // BEGIN transform output
     Mat top_blob_bordered;
@@ -849,6 +1003,7 @@ static void conv3x3s1_winograd64_pack4_neon(const Mat& bottom_blob, Mat& top_blo
             }
         }
     }
+    fprintf(stderr, "top_blob_bordered = %f %f %f %f\n", top_blob_bordered[0],top_blob_bordered[1],top_blob_bordered[2],top_blob_bordered[3]);
     // END transform output
 
     // cut result pad
