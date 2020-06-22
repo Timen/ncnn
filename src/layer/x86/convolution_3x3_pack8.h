@@ -14,11 +14,11 @@
 
 
 static inline __m256 _mm256_fmadd_1_ps(__m256 a, __m256 b, float c) {
-    return _mm256_fmadd_ps(b,_mm256_set1_ps(c),a);
+    return _mm256_fmadd_ps(b,_mm256_broadcast_ss(c),a);
 }
 
 static inline __m256 _mm256_fmrsub_1_ps(__m256 a, __m256 b, float c) {
-    return _mm256_sub_ps(a,_mm256_mul_ps(b,_mm256_set1_ps(c)));
+    return _mm256_sub_ps(a,_mm256_mul_ps(b,_mm256_broadcast_ss(c)));
 }
 
 
@@ -360,7 +360,7 @@ static void conv3x3s1_winograd64_pack8_avx(const Mat& bottom_blob, Mat& top_blob
                         //                         tmp[2][m] = tmp12a - tmp12b;
 
                         __m256 _tmp34a = _mm256_fmrsub_1_ps(_mm256_fmadd_1_ps(_r06, _r02, 0.25f), _r04, 1.25f);
-                        __m256 _tmp34b = _mm256_fmadd_1_ps(_mm256_fmrsub_1_ps(_mm256_mul_ps(_r01, _mm256_set1_ps(0.5f)), _r03, 2.5f), _r05, 2.f);
+                        __m256 _tmp34b = _mm256_fmadd_1_ps(_mm256_fmrsub_1_ps(_mm256_mul_ps(_r01, _mm256_broadcast_ss(0.5f)), _r03, 2.5f), _r05, 2.f);
 
                         //                         float tmp34a = (r0[6] + r0[2] * 0.25 - r0[4] * 1.25);
                         //                         float tmp34b = (r0[1] * 0.5 - r0[3] * 2.5 + r0[5] * 2);
@@ -374,7 +374,7 @@ static void conv3x3s1_winograd64_pack8_avx(const Mat& bottom_blob, Mat& top_blob
                         //                         tmp[4][m] = tmp34a - tmp34b;
 
                         __m256 _tmp56a = _mm256_fmadd_1_ps(_r06, _mm256_fmrsub_1_ps(_r02, _r04, 1.25f), 4.f);
-                        __m256 _tmp56b = _mm256_fmadd_1_ps(_mm256_fmrsub_1_ps(_mm256_mul_ps(_r01, _mm256_set1_ps(2.f)), _r03, 2.5f), _r05, 0.5f);
+                        __m256 _tmp56b = _mm256_fmadd_1_ps(_mm256_fmrsub_1_ps(_mm256_mul_ps(_r01, _mm256_broadcast_ss(2.f)), _r03, 2.5f), _r05, 0.5f);
 
                         //                         float tmp56a = (r0[6] + (r0[2] - r0[4] * 1.25) * 4);
                         //                         float tmp56b = (r0[1] * 2 - r0[3] * 2.5 + r0[5] * 0.5);
@@ -429,7 +429,7 @@ static void conv3x3s1_winograd64_pack8_avx(const Mat& bottom_blob, Mat& top_blob
                         //                         r0_tm[2] = tmp12a - tmp12b;
 
                         __m256 _tmp34a = _mm256_fmrsub_1_ps(_mm256_fmadd_1_ps(_tmp06, _tmp02, 0.25f), _tmp04, 1.25f);
-                        __m256 _tmp34b = _mm256_fmadd_1_ps(_mm256_fmrsub_1_ps(_mm256_mul_ps(_tmp01, _mm256_set1_ps(0.5f)), _tmp03, 2.5f), _tmp05, 2.f);
+                        __m256 _tmp34b = _mm256_fmadd_1_ps(_mm256_fmrsub_1_ps(_mm256_mul_ps(_tmp01, _mm256_broadcast_ss(0.5f)), _tmp03, 2.5f), _tmp05, 2.f);
 
                         //                         float tmp34a = (tmp0[6] + tmp0[2] * 0.25 - tmp0[4] * 1.25);
                         //                         float tmp34b = (tmp0[1] * 0.5 - tmp0[3] * 2.5 + tmp0[5] * 2);
@@ -441,7 +441,7 @@ static void conv3x3s1_winograd64_pack8_avx(const Mat& bottom_blob, Mat& top_blob
                         //                         r0_tm[4] = tmp34a - tmp34b;
 
                         __m256 _tmp56a = _mm256_fmadd_1_ps(_tmp06, _mm256_fmrsub_1_ps(_tmp02, _tmp04, 1.25f), 4.f);
-                        __m256 _tmp56b = _mm256_fmadd_1_ps(_mm256_fmrsub_1_ps(_mm256_mul_ps(_tmp01, _mm256_set1_ps(2.f)), _tmp03, 2.5f), _tmp05, 0.5f);
+                        __m256 _tmp56b = _mm256_fmadd_1_ps(_mm256_fmrsub_1_ps(_mm256_mul_ps(_tmp01, _mm256_broadcast_ss(2.f)), _tmp03, 2.5f), _tmp05, 0.5f);
 
                         //                         float tmp56a = (tmp0[6] + (tmp0[2] - tmp0[4] * 1.25) * 4);
                         //                         float tmp56b = (tmp0[1] * 2 - tmp0[3] * 2.5 + tmp0[5] * 0.5);
@@ -655,18 +655,18 @@ static void conv3x3s1_winograd64_pack8_avx(const Mat& bottom_blob, Mat& top_blob
                     const float* k01 = kernel0_tm.row(r);
 
                     int nn = inch; // inch always > 0
-                    __m256 _sum0 = _mm256_set1_ps(0.f);
-                    __m256 _sum1 = _mm256_set1_ps(0.f);
-                    __m256 _sum2 = _mm256_set1_ps(0.f);
-                    __m256 _sum3 = _mm256_set1_ps(0.f);
-                    __m256 _sum4 = _mm256_set1_ps(0.f);
-                    __m256 _sum5 = _mm256_set1_ps(0.f);
-                    __m256 _sum6 = _mm256_set1_ps(0.f);
-                    __m256 _sum7 = _mm256_set1_ps(0.f);
-                    __m256 _sum8 = _mm256_set1_ps(0.f);
-                    __m256 _sum9 = _mm256_set1_ps(0.f);
-                    __m256 _sum10 = _mm256_set1_ps(0.f);
-                    __m256 _sum11 = _mm256_set1_ps(0.f);
+                    __m256 _sum0 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum1 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum2 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum3 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum4 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum5 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum6 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum7 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum8 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum9 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum10 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum11 = _mm256_broadcast_ss(0.f);
 
                     for (;nn>0;nn--){
                         __m256 _k01 = _mm256_loadu_ps(k01);
@@ -911,14 +911,14 @@ static void conv3x3s1_winograd64_pack8_avx(const Mat& bottom_blob, Mat& top_blob
                     const float* k01 = kernel0_tm.row(r);
 
                     int nn = inch; // inch always > 0
-                    __m256 _sum0 = _mm256_set1_ps(0.f);
-                    __m256 _sum1 = _mm256_set1_ps(0.f);
-                    __m256 _sum2 = _mm256_set1_ps(0.f);
-                    __m256 _sum3 = _mm256_set1_ps(0.f);
-                    __m256 _sum4 = _mm256_set1_ps(0.f);
-                    __m256 _sum5 = _mm256_set1_ps(0.f);
-                    __m256 _sum6 = _mm256_set1_ps(0.f);
-                    __m256 _sum7 = _mm256_set1_ps(0.f);
+                    __m256 _sum0 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum1 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum2 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum3 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum4 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum5 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum6 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum7 = _mm256_broadcast_ss(0.f);
 
                     for (;nn>0;nn--){
                         __m256 _k01 = _mm256_loadu_ps(k01);
@@ -1088,10 +1088,10 @@ static void conv3x3s1_winograd64_pack8_avx(const Mat& bottom_blob, Mat& top_blob
                     const float* k01 = kernel0_tm.row(r);
 
                     int nn = inch; // inch always > 0
-                    __m256 _sum0 = _mm256_set1_ps(0.f);
-                    __m256 _sum1 = _mm256_set1_ps(0.f);
-                    __m256 _sum2 = _mm256_set1_ps(0.f);
-                    __m256 _sum3 = _mm256_set1_ps(0.f);
+                    __m256 _sum0 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum1 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum2 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum3 = _mm256_broadcast_ss(0.f);
 
 
                     for (;nn>0;nn--){
@@ -1192,55 +1192,55 @@ static void conv3x3s1_winograd64_pack8_avx(const Mat& bottom_blob, Mat& top_blob
                     const float* k01 = kernel0_tm.row(r);
 
                     int nn = inch; // inch always > 0
-                    __m256 _sum0 = _mm256_set1_ps(0.f);
-                    __m256 _sum1 = _mm256_set1_ps(0.f);
+                    __m256 _sum0 = _mm256_broadcast_ss(0.f);
+                    __m256 _sum1 = _mm256_broadcast_ss(0.f);
 
                     for (;nn>0;nn--){
                         __m256 _k01 = _mm256_loadu_ps(k01);
-                        __m256 _r0 = _mm256_set1_ps(r0[0]);
-                        __m256 _r01 = _mm256_set1_ps(r0[8]);
+                        __m256 _r0 = _mm256_broadcast_ss(r0);
+                        __m256 _r01 = _mm256_broadcast_ss(r0+8);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
                         _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
 
                         _k01 = _mm256_loadu_ps(k01+8);
-                        _r0 = _mm256_set1_ps(r0[1]);
-                        _r01 = _mm256_set1_ps(r0[9]);
+                        _r0 = _mm256_broadcast_ss(r0+1);
+                        _r01 = _mm256_broadcast_ss(r0+9);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
                         _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
 
                         _k01 = _mm256_loadu_ps(k01+16);
-                        _r0 = _mm256_set1_ps(r0[2]);
-                        _r01 = _mm256_set1_ps(r0[10]);
+                        _r0 = _mm256_broadcast_ss(r0+2);
+                        _r01 = _mm256_broadcast_ss(r0+10);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
                         _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
 
                         _k01 = _mm256_loadu_ps(k01+24);
-                        _r0 = _mm256_set1_ps(r0[3]);
-                        _r01 = _mm256_set1_ps(r0[11]);
+                        _r0 = _mm256_broadcast_ss(r0+3);
+                        _r01 = _mm256_broadcast_ss(r0+11);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
                         _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
 
                         _k01 = _mm256_loadu_ps(k01+32);
-                        _r0 = _mm256_set1_ps(r0[4]);
-                        _r01 = _mm256_set1_ps(r0[12]);
+                        _r0 = _mm256_broadcast_ss(r0+4);
+                        _r01 = _mm256_broadcast_ss(r0+12);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
                         _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
 
                         _k01 = _mm256_loadu_ps(k01+40);
-                        _r0 = _mm256_set1_ps(r0[5]);
-                        _r01 = _mm256_set1_ps(r0[13]);
+                        _r0 = _mm256_broadcast_ss(r0+5);
+                        _r01 = _mm256_broadcast_ss(r0+13);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
                         _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
 
                         _k01 = _mm256_loadu_ps(k01+48);
-                        _r0 = _mm256_set1_ps(r0[6]);
-                        _r01 = _mm256_set1_ps(r0[14]);
+                        _r0 = _mm256_broadcast_ss(r0+6);
+                        _r01 = _mm256_broadcast_ss(r0+14);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
                         _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
 
                         _k01 = _mm256_loadu_ps(k01+56);
-                        _r0 = _mm256_set1_ps(r0[7]);
-                        _r01 = _mm256_set1_ps(r0[15]);
+                        _r0 = _mm256_broadcast_ss(r0+7);
+                        _r01 = _mm256_broadcast_ss(r0+15);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
                         _sum1 = _mm256_fmadd_ps(_k01, _r01,_sum1);
 
@@ -1261,38 +1261,38 @@ static void conv3x3s1_winograd64_pack8_avx(const Mat& bottom_blob, Mat& top_blob
                     const float* k01 = kernel0_tm.row(r);
 
                     int nn = inch; // inch always > 0
-                    __m256 _sum0 = _mm256_set1_ps(0.f);
+                    __m256 _sum0 = _mm256_broadcast_ss(0.f);
 
                     for (; nn>0; nn--) {
 
                         __m256 _k01 = _mm256_loadu_ps(k01);
-                        __m256 _r0 = _mm256_set1_ps(r0[0]);
+                        __m256 _r0 = _mm256_broadcast_ss(r0);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
 
                         _k01 = _mm256_loadu_ps(k01+8);
-                        _r0 = _mm256_set1_ps(r0[1]);
+                        _r0 = _mm256_broadcast_ss(r0+1);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0 );
 
                         _k01 = _mm256_loadu_ps(k01+16);
-                        _r0 = _mm256_set1_ps(r0[2]);
+                        _r0 = _mm256_broadcast_ss(r0+2);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0 );
 
                         _k01 = _mm256_loadu_ps(k01+24);
-                        _r0 = _mm256_set1_ps(r0[3]);
+                        _r0 = _mm256_broadcast_ss(r0+3);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
                         _k01 = _mm256_loadu_ps(k01+32);
-                        _r0 = _mm256_set1_ps(r0[4]);
+                        _r0 = _mm256_broadcast_ss(r0+4);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
                         _k01 = _mm256_loadu_ps(k01+40);
-                        _r0 = _mm256_set1_ps(r0[5]);
+                        _r0 = _mm256_broadcast_ss(r0+5);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
 
                         _k01 = _mm256_loadu_ps(k01+48);
-                        _r0 = _mm256_set1_ps(r0[6]);
+                        _r0 = _mm256_broadcast_ss(r0+6);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
 
                         _k01 = _mm256_loadu_ps(k01+56);
-                        _r0 = _mm256_set1_ps(r0[7]);
+                        _r0 = _mm256_broadcast_ss(r0+7);
                         _sum0 = _mm256_fmadd_ps(_k01, _r0,_sum0);
 
 
@@ -1349,7 +1349,7 @@ static void conv3x3s1_winograd64_pack8_avx(const Mat& bottom_blob, Mat& top_blob
             Mat out0 = top_blob_bordered.channel(p);
 
             //             const float bias0 = bias ? bias[p] : 0.f;
-            __m256 _bias0 = bias ? _mm256_loadu_ps((const float*)bias + p * 8) : _mm256_set1_ps(0.f);
+            __m256 _bias0 = bias ? _mm256_loadu_ps((const float*)bias + p * 8) : _mm256_broadcast_ss(0.f);
 
             float tmp[6][8][8];
 
