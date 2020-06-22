@@ -184,7 +184,7 @@ int Convolution_x86::create_pipeline(const Option& opt)
     int out_elempack = (opt.use_packing_layout && num_output % 8 == 0) ? 8 : 1;
     // pack8
     if (elempack == 8 && out_elempack == 8)
-    {  
+    {
         if (kernel_w == 3 && kernel_h == 3 && dilation_w == 1 && dilation_h == 1 && stride_w == 1 && stride_h == 1)
         {
             conv3x3s1_winograd64_transform_kernel_pack8_avx(weight_data, weight_data_pack8, num_input, num_output);
