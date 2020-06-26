@@ -1,6 +1,6 @@
 // Tencent is pleased to support the open source community by making ncnn available.
 //
-// Copyright (C) 2017 THL A29 Limited, a Tencent company. All rights reserved.
+// Copyright (C) 2019 THL A29 Limited, a Tencent company. All rights reserved.
 //
 // Licensed under the BSD 3-Clause License (the "License"); you may not use this file except
 // in compliance with the License. You may obtain a copy of the License at
@@ -12,42 +12,27 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-#ifndef LAYER_LSTM_H
-#define LAYER_LSTM_H
+#ifndef LAYER_SLICE_x86_H
+#define LAYER_SLICE_x86_H
 
-#include "layer.h"
+#include "slice.h"
 
 namespace ncnn {
 
-class LSTM : public Layer
+class Slice_x86 : virtual public Slice
 {
 public:
-    LSTM();
+    Slice_x86();
 
-    virtual int load_param(const ParamDict& pd);
-
-    virtual int load_model(const ModelBin& mb);
-
-    virtual int forward(const Mat& bottom_blob, Mat& top_blob, const Option& opt) const;
+    virtual int create_pipeline(const Option& opt);
+    virtual int destroy_pipeline(const Option& opt);
 
     virtual int forward(const std::vector<Mat>& bottom_blobs, std::vector<Mat>& top_blobs, const Option& opt) const;
 
 public:
-    int num_output;
-    int weight_data_size;
-    int direction; // 0=forward 1=reverse 2=bidirectional
-
-    Mat weight_hc_data;
-    Mat weight_xc_data;
-    Mat bias_c_data;
-
-    mutable Mat hidden;
-    mutable Mat cell;
-
-protected:
-    int lstm(const Mat& bottom_blob, Mat& top_blob, int reverse, const Mat& weight_xc, const Mat& bias_c, const Mat& weight_hc, const Mat& cont_blob, const Option& opt) const;
+    ncnn::Layer* packing_pack1;
 };
 
 } // namespace ncnn
 
-#endif // LAYER_LSTM_H
+#endif // LAYER_SLICE_x86_H

@@ -12,42 +12,36 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-#ifndef LAYER_LSTM_H
-#define LAYER_LSTM_H
+#ifndef LAYER_LSTM_ARM_H
+#define LAYER_LSTM_ARM_H
 
-#include "layer.h"
+#include "lstm.h"
 
 namespace ncnn {
 
-class LSTM : public Layer
+class LSTM_arm : virtual public LSTM
 {
 public:
-    LSTM();
+    LSTM_arm();
 
-    virtual int load_param(const ParamDict& pd);
-
-    virtual int load_model(const ModelBin& mb);
+    virtual int create_pipeline(const Option& opt);
+    virtual int destroy_pipeline(const Option& opt);
 
     virtual int forward(const Mat& bottom_blob, Mat& top_blob, const Option& opt) const;
 
     virtual int forward(const std::vector<Mat>& bottom_blobs, std::vector<Mat>& top_blobs, const Option& opt) const;
 
 public:
-    int num_output;
-    int weight_data_size;
-    int direction; // 0=forward 1=reverse 2=bidirectional
+    Mat weight_hc_data_fp16;
+    Mat weight_xc_data_fp16;
 
-    Mat weight_hc_data;
-    Mat weight_xc_data;
-    Mat bias_c_data;
-
-    mutable Mat hidden;
-    mutable Mat cell;
+    ncnn::Layer* reshape;
 
 protected:
     int lstm(const Mat& bottom_blob, Mat& top_blob, int reverse, const Mat& weight_xc, const Mat& bias_c, const Mat& weight_hc, const Mat& cont_blob, const Option& opt) const;
+    int lstm_fp16(const Mat& bottom_blob, Mat& top_blob, int reverse, const Mat& weight_xc, const Mat& bias_c, const Mat& weight_hc, const Mat& cont_blob, const Option& opt) const;
 };
 
 } // namespace ncnn
 
-#endif // LAYER_LSTM_H
+#endif // LAYER_LSTM_ARM_H
