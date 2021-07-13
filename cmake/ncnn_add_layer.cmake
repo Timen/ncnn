@@ -154,6 +154,7 @@ macro(ncnn_add_layer class)
             ncnn_add_arch_opt_layer(${class} avx2 "/arch:AVX2 /DAVX2 /fp:strict")
         else()
             ncnn_add_arch_opt_layer(${class} avx2 "-mfma -mf16c -mavx2")
+            ncnn_add_arch_opt_layer(${class} avx "-mavx")
         endif()
     endif()
 
