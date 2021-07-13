@@ -61,7 +61,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 
                 if (bias_data_size == 0)
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 8;
@@ -94,7 +94,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                     __m128 _bias = _mm_set1_ps(bias_data[0]);
 #endif
 
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 8;
@@ -102,7 +102,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 
 #if __AVX2__
                         __m256 _v = _mm256_cvtepi32_ps(_mm256_loadu_si256((const __m256i*)intptr));
-                        _v = _mm256_fmadd_ps(_v, _scale_in, _bias);
+                        _v = _mm256_comp_fmadd_ps(_v, _scale_in, _bias);
                         _v = activation_avx(_v, activation_type, activation_params);
                         _v = _mm256_mul_ps(_v, _scale_out);
                         *(int64_t*)ptr = float2int8_avx(_v);
@@ -121,7 +121,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 }
                 else
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 8;
@@ -130,7 +130,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 #if __AVX2__
                         __m256 _bias = _mm256_loadu_ps((const float*)bias_data + i * 8);
                         __m256 _v = _mm256_cvtepi32_ps(_mm256_loadu_si256((const __m256i*)intptr));
-                        _v = _mm256_fmadd_ps(_v, _scale_in, _bias);
+                        _v = _mm256_comp_fmadd_ps(_v, _scale_in, _bias);
                         _v = activation_avx(_v, activation_type, activation_params);
                         _v = _mm256_mul_ps(_v, _scale_out);
                         *(int64_t*)ptr = float2int8_avx(_v);
@@ -160,7 +160,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 
                 if (bias_data_size == 0)
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 8;
@@ -196,7 +196,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                     __m128 _bias = _mm_set1_ps(bias_data[0]);
 #endif
 
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 8;
@@ -205,7 +205,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 #if __AVX2__
                         __m256 _scale_out = _mm256_loadu_ps((const float*)scale_out_data + i * 8);
                         __m256 _v = _mm256_cvtepi32_ps(_mm256_loadu_si256((const __m256i*)intptr));
-                        _v = _mm256_fmadd_ps(_v, _scale_in, _bias);
+                        _v = _mm256_comp_fmadd_ps(_v, _scale_in, _bias);
                         _v = activation_avx(_v, activation_type, activation_params);
                         _v = _mm256_mul_ps(_v, _scale_out);
                         *(int64_t*)ptr = float2int8_avx(_v);
@@ -226,7 +226,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 }
                 else
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 8;
@@ -236,7 +236,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                         __m256 _scale_out = _mm256_loadu_ps((const float*)scale_out_data + i * 8);
                         __m256 _bias = _mm256_loadu_ps((const float*)bias_data + i * 8);
                         __m256 _v = _mm256_cvtepi32_ps(_mm256_loadu_si256((const __m256i*)intptr));
-                        _v = _mm256_fmadd_ps(_v, _scale_in, _bias);
+                        _v = _mm256_comp_fmadd_ps(_v, _scale_in, _bias);
                         _v = activation_avx(_v, activation_type, activation_params);
                         _v = _mm256_mul_ps(_v, _scale_out);
                         *(int64_t*)ptr = float2int8_avx(_v);
@@ -268,7 +268,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 
                 if (bias_data_size == 0)
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 8;
@@ -304,7 +304,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                     __m128 _bias = _mm_set1_ps(bias_data[0]);
 #endif
 
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 8;
@@ -313,7 +313,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 #if __AVX2__
                         __m256 _scale_in = _mm256_loadu_ps((const float*)scale_in_data + i * 8);
                         __m256 _v = _mm256_cvtepi32_ps(_mm256_loadu_si256((const __m256i*)intptr));
-                        _v = _mm256_fmadd_ps(_v, _scale_in, _bias);
+                        _v = _mm256_comp_fmadd_ps(_v, _scale_in, _bias);
                         _v = activation_avx(_v, activation_type, activation_params);
                         _v = _mm256_mul_ps(_v, _scale_out);
                         *(int64_t*)ptr = float2int8_avx(_v);
@@ -334,7 +334,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 }
                 else
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 8;
@@ -344,7 +344,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                         __m256 _scale_in = _mm256_loadu_ps((const float*)scale_in_data + i * 8);
                         __m256 _bias = _mm256_loadu_ps((const float*)bias_data + i * 8);
                         __m256 _v = _mm256_cvtepi32_ps(_mm256_loadu_si256((const __m256i*)intptr));
-                        _v = _mm256_fmadd_ps(_v, _scale_in, _bias);
+                        _v = _mm256_comp_fmadd_ps(_v, _scale_in, _bias);
                         _v = activation_avx(_v, activation_type, activation_params);
                         _v = _mm256_mul_ps(_v, _scale_out);
                         *(int64_t*)ptr = float2int8_avx(_v);
@@ -370,7 +370,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             {
                 if (bias_data_size == 0)
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 8;
@@ -409,7 +409,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                     __m128 _bias = _mm_set1_ps(bias_data[0]);
 #endif
 
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 8;
@@ -419,7 +419,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                         __m256 _scale_in = _mm256_loadu_ps((const float*)scale_in_data + i * 8);
                         __m256 _scale_out = _mm256_loadu_ps((const float*)scale_out_data + i * 8);
                         __m256 _v = _mm256_cvtepi32_ps(_mm256_loadu_si256((const __m256i*)intptr));
-                        _v = _mm256_fmadd_ps(_v, _scale_in, _bias);
+                        _v = _mm256_comp_fmadd_ps(_v, _scale_in, _bias);
                         _v = activation_avx(_v, activation_type, activation_params);
                         _v = _mm256_mul_ps(_v, _scale_out);
                         *(int64_t*)ptr = float2int8_avx(_v);
@@ -442,7 +442,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 }
                 else
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 8;
@@ -453,7 +453,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                         __m256 _scale_out = _mm256_loadu_ps((const float*)scale_out_data + i * 8);
                         __m256 _bias = _mm256_loadu_ps((const float*)bias_data + i * 8);
                         __m256 _v = _mm256_cvtepi32_ps(_mm256_loadu_si256((const __m256i*)intptr));
-                        _v = _mm256_fmadd_ps(_v, _scale_in, _bias);
+                        _v = _mm256_comp_fmadd_ps(_v, _scale_in, _bias);
                         _v = activation_avx(_v, activation_type, activation_params);
                         _v = _mm256_mul_ps(_v, _scale_out);
                         *(int64_t*)ptr = float2int8_avx(_v);
@@ -490,7 +490,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 
             if (bias_data_size == 0)
             {
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int i = 0; i < h; i++)
                 {
                     const int* intptr = bottom_blob.row<const int>(i);
@@ -533,7 +533,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             }
             else
             {
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int i = 0; i < h; i++)
                 {
                     const int* intptr = bottom_blob.row<const int>(i);
@@ -556,7 +556,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                     {
 #if __AVX2__
                         __m256 _v = _mm256_cvtepi32_ps(_mm256_loadu_si256((const __m256i*)intptr));
-                        _v = _mm256_fmadd_ps(_v, _scale_in, _bias);
+                        _v = _mm256_comp_fmadd_ps(_v, _scale_in, _bias);
                         _v = activation_avx(_v, activation_type, activation_params);
                         _v = _mm256_mul_ps(_v, _scale_out);
                         *(int64_t*)ptr = float2int8_avx(_v);
@@ -592,7 +592,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 
             if (bias_data_size == 0)
             {
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int q = 0; q < channels; q++)
                 {
                     const int* intptr = bottom_blob.channel(q);
@@ -635,7 +635,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             }
             else
             {
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int q = 0; q < channels; q++)
                 {
                     const int* intptr = bottom_blob.channel(q);
@@ -658,7 +658,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                     {
 #if __AVX2__
                         __m256 _v = _mm256_cvtepi32_ps(_mm256_loadu_si256((const __m256i*)intptr));
-                        _v = _mm256_fmadd_ps(_v, _scale_in, _bias);
+                        _v = _mm256_comp_fmadd_ps(_v, _scale_in, _bias);
                         _v = activation_avx(_v, activation_type, activation_params);
                         _v = _mm256_mul_ps(_v, _scale_out);
                         *(int64_t*)ptr = float2int8_avx(_v);
@@ -703,7 +703,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 
                 if (bias_data_size == 0)
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 4;
@@ -724,7 +724,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 {
                     __m128 _bias = _mm_set1_ps(bias_data[0]);
 
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 4;
@@ -743,7 +743,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 }
                 else
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 4;
@@ -768,7 +768,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 
                 if (bias_data_size == 0)
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 4;
@@ -790,7 +790,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 {
                     __m128 _bias = _mm_set1_ps(bias_data[0]);
 
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 4;
@@ -810,7 +810,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 }
                 else
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 4;
@@ -836,7 +836,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 
                 if (bias_data_size == 0)
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 4;
@@ -858,7 +858,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 {
                     __m128 _bias = _mm_set1_ps(bias_data[0]);
 
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 4;
@@ -878,7 +878,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 }
                 else
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 4;
@@ -902,7 +902,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             {
                 if (bias_data_size == 0)
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 4;
@@ -925,7 +925,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 {
                     __m128 _bias = _mm_set1_ps(bias_data[0]);
 
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 4;
@@ -946,7 +946,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 }
                 else
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < w; i++)
                     {
                         const int* intptr = (const int*)bottom_blob + i * 4;
@@ -984,7 +984,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             {
                 if (bias_data_size == 0)
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < outh; i++)
                     {
                         const int* intptr0 = bottom_blob.row<const int>(i * 2);
@@ -1016,7 +1016,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 }
                 else
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < outh; i++)
                     {
                         const int* intptr0 = bottom_blob.row<const int>(i * 2);
@@ -1053,7 +1053,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             {
                 if (bias_data_size == 0)
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < h; i++)
                     {
                         const int* intptr = bottom_blob.row<const int>(i);
@@ -1087,7 +1087,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 }
                 else
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int i = 0; i < h; i++)
                     {
                         const int* intptr = bottom_blob.row<const int>(i);
@@ -1140,7 +1140,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             {
                 if (bias_data_size == 0)
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int q = 0; q < outc; q++)
                     {
                         const int* intptr0 = bottom_blob.channel(q * 2);
@@ -1172,7 +1172,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 }
                 else
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int q = 0; q < outc; q++)
                     {
                         const int* intptr0 = bottom_blob.channel(q * 2);
@@ -1209,7 +1209,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             {
                 if (bias_data_size == 0)
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int q = 0; q < channels; q++)
                     {
                         const int* intptr = bottom_blob.channel(q);
@@ -1243,7 +1243,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
                 }
                 else
                 {
-                    #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                     for (int q = 0; q < channels; q++)
                     {
                         const int* intptr = bottom_blob.channel(q);
@@ -1301,7 +1301,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 
             if (bias_data_size == 0)
             {
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int i = 0; i < w; i++)
                 {
                     float v = intptr[i] * scale_in;
@@ -1312,7 +1312,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             {
                 const float bias = bias_data[0];
 
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int i = 0; i < w; i++)
                 {
                     float v = intptr[i] * scale_in + bias;
@@ -1321,7 +1321,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             }
             else
             {
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int i = 0; i < w; i++)
                 {
                     float v = intptr[i] * scale_in + bias_data[i];
@@ -1335,7 +1335,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 
             if (bias_data_size == 0)
             {
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int i = 0; i < w; i++)
                 {
                     float v = intptr[i] * scale_in;
@@ -1346,7 +1346,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             {
                 const float bias = bias_data[0];
 
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int i = 0; i < w; i++)
                 {
                     float v = intptr[i] * scale_in + bias;
@@ -1355,7 +1355,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             }
             else
             {
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int i = 0; i < w; i++)
                 {
                     float v = intptr[i] * scale_in + bias_data[i];
@@ -1369,7 +1369,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 
             if (bias_data_size == 0)
             {
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int i = 0; i < w; i++)
                 {
                     float v = intptr[i] * scale_in_data[i];
@@ -1380,7 +1380,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             {
                 const float bias = bias_data[0];
 
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int i = 0; i < w; i++)
                 {
                     float v = intptr[i] * scale_in_data[i] + bias;
@@ -1389,7 +1389,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             }
             else
             {
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int i = 0; i < w; i++)
                 {
                     float v = intptr[i] * scale_in_data[i] + bias_data[i];
@@ -1401,7 +1401,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
         {
             if (bias_data_size == 0)
             {
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int i = 0; i < w; i++)
                 {
                     float v = intptr[i] * scale_in_data[i];
@@ -1412,7 +1412,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             {
                 const float bias = bias_data[0];
 
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int i = 0; i < w; i++)
                 {
                     float v = intptr[i] * scale_in_data[i] + bias;
@@ -1421,7 +1421,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
             }
             else
             {
-                #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
                 for (int i = 0; i < w; i++)
                 {
                     float v = intptr[i] * scale_in_data[i] + bias_data[i];
@@ -1442,7 +1442,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 
         if (bias_data_size == 0)
         {
-            #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
             for (int i = 0; i < h; i++)
             {
                 const int* intptr = bottom_blob.row<const int>(i);
@@ -1460,7 +1460,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
         }
         else
         {
-            #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
             for (int i = 0; i < h; i++)
             {
                 const int* intptr = bottom_blob.row<const int>(i);
@@ -1492,7 +1492,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
 
         if (bias_data_size == 0)
         {
-            #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
             for (int q = 0; q < channels; q++)
             {
                 const int* intptr = bottom_blob.channel(q);
@@ -1510,7 +1510,7 @@ int Requantize_x86::forward(const Mat& bottom_blob, Mat& top_blob, const Option&
         }
         else
         {
-            #pragma omp parallel for num_threads(opt.num_threads)
+#pragma omp parallel for num_threads(opt.num_threads)
             for (int q = 0; q < channels; q++)
             {
                 const int* intptr = bottom_blob.channel(q);

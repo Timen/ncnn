@@ -407,7 +407,7 @@ int cpu_support_x86_avx2()
 
 int cpu_support_x86_avx()
 {
-    return 1;
+    return 0;
 #if (_M_AMD64 || __x86_64__) || (_M_IX86 || __i386__)
 #if defined(_MSC_VER)
     // TODO move to init function
